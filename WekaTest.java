@@ -41,6 +41,11 @@ public class WekaTest {
 		classifier.buildClassifier(train);
 	}
 
+	public static void fulltraining() throws Exception {
+		eval = new Evaluation(train);
+		eval.evaluateModel(classifier, train);
+	}
+
 	public static void crossValidate() throws Exception {
 		eval = new Evaluation(train);
 	    eval.crossValidateModel(classifier, train, 10, new Random(1));
@@ -73,7 +78,8 @@ public class WekaTest {
 	    //System.out.println(classifier);
 	    
 
-	    crossValidate();
+	    //crossValidate();
+	    fulltraining();
 	    //eval.evaluateModel(nb, structure);
 	    printEvalResult();
  		
