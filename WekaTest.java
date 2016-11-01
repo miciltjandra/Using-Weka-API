@@ -14,37 +14,68 @@ import java.util.*;
 import weka.core.converters.ConverterUtils.DataSource;
 
 public class WekaTest {
-	public static void main(String args[]) throws Exception {
-		System.out.println("a");
-		Scanner sc = new Scanner(System.in);
-		String filename = sc.next();
-		System.out.println(filename + "aa");
+	private static Instances train;
+	private static NaiveBayes classifier;
+	private static Evaluation eval;
 
-		// load data
-	    ArffLoader loader = new ArffLoader();
+	public static void load(String filename) throws Exception {
+		ArffLoader loader = new ArffLoader();
 	    loader.setFile(new File(filename));
-	    Instances structure = loader.getDataSet();
-	    structure.setClassIndex(structure.numAttributes() - 1);
+	    train = loader.getDataSet();
+	    train.setClassIndex(train.numAttributes() - 1);
+	}
 
-	    //setup discretize filter
-	    Discretize filter = new Discretize();
-	    filter.setInputFormat(structure);
+	public static void discretize() throws Exception {
+		//setup discretize filter
+		Discretize filter = new Discretize();
+	    filter.setInputFormat(train);
 
 	    //apply discretize
-	    //Instances filtered = Filter.useFilter(structure, filter);
-	    Instances filtered = structure;
+		Instances filtered = Filter.useFilter(train, filter);
+	    train = filtered;
+	}
+
+	public static void naiveBayes() throws Exception {
+		//train NaiveBayes
+		classifier = new NaiveBayes();
+		classifier.buildClassifier(train);
+	}
+
+	public static void crossValidate() throws Exception {
+		eval = new Evaluation(train);
+	    eval.crossValidateModel(classifier, train, 10, new Random(1));
+	}
+
+	public static void printEvalResult() throws Exception {
+		System.out.println(classifier);
+		System.out.println(eval.toSummaryString());
+ 		System.out.println(eval.toClassDetailsString());
+ 		System.out.println(eval.toMatrixString());
+	}
+
+	public static void main(String args[]) throws Exception {
+		System.out.print("Please input path to dataset : ");
+		Scanner sc = new Scanner(System.in);
+		String filename = sc.next();
+		//System.out.println(filename + "aa");
+
+		// load data
+	    load(filename);
+
+	    //setup discretize filter
+	    discretize();
 
 
 	    // train NaiveBayes
-	    NaiveBayes nb = new NaiveBayes();
-	    nb.buildClassifier(filtered);
-	    System.out.println(nb);
+	    //NaiveBayes nb = new NaiveBayes();
+	    //nb.buildClassifier(train);
+	    naiveBayes();
+	    //System.out.println(classifier);
+	    
 
-	    Evaluation eval = new Evaluation(filtered);
-	    eval.crossValidateModel(nb, filtered, 10, new Random(1));
+	    crossValidate();
 	    //eval.evaluateModel(nb, structure);
- 		System.out.println(eval.toSummaryString());
- 		System.out.println(eval.toClassDetailsString());
- 		System.out.println(eval.toMatrixString());
+	    printEvalResult();
+ 		
 	}
 }
